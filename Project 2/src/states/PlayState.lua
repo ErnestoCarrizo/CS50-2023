@@ -62,6 +62,7 @@ function PlayState:update(dt)
 
     if powerup then
         powerup:update(dt)
+        powerup:collide(self.paddle)
     end
 
     if self.ball:collides(self.paddle) then

@@ -10,6 +10,7 @@ function Powerup:init(x, y, kind)
 
     --Kind of power up from 1 to 10
     self.kind = kind
+    self.inGame = true
 end
 
 function Powerup:update(dt)
@@ -17,7 +18,15 @@ function Powerup:update(dt)
 
 end
 
+function Powerup:collide(target)
+    if self.x < target.x + target.width and self.x + self.width > target.x and self.y < target.y + target.height and self.height + self.y > target.y then
+        self.inGame = false
+    end
+end
+
 function Powerup:render()
-    love.graphics.draw(gTextures['main'], gFrames['powerups'][self.kind - 1],
+    if self.inGame then
+        love.graphics.draw(gTextures['main'], gFrames['powerups'][self.kind - 1],
         self.x, self.y)
+    end
 end
