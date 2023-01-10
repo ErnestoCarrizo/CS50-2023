@@ -17,7 +17,7 @@
 PlayState = Class{__includes = BaseState}
 
 powerup_spawn_timer = 5
-
+key_obtained = false
 paddle_sizes = {
     [1] = 32,
     [2] = 64,
@@ -72,12 +72,16 @@ function PlayState:update(dt)
 
     if powerup then
         powerup:update(dt)
-        if powerup:collides(self.paddle) and #self.balls <= 2 then
-            self.balls[#self.balls + 1] = Ball(self.balls[1].x + 8,
+        if powerup:collides(self.paddle) then
+            if powerup.kind == 10 then
+                key_obtained = true
+            else
+                self.balls[#self.balls + 1] = Ball(self.balls[1].x + 8,
                 self.balls[1].y + 8, 
                 self.balls[1].dx,
                 self.balls[1].dy,
                 math.random(7))
+            end
         end
     end
 
@@ -165,7 +169,7 @@ function PlayState:update(dt)
                     end
 
                     -- only allow colliding with one brick, for corners
-                    
+                    ::continue::
             end
         end
     end

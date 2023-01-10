@@ -1,5 +1,17 @@
 Powerup = Class{}
 
+powerup_kind = {
+    ["red-cross"] = 1,
+    ["green-cross"] = 2,
+    ["hearth"] = 3,
+    ["skull"] = 4,
+    ["up"] = 5,
+    ["down"] = 6,
+    ["ball"] = 7,
+    ["square"] = 8,
+    ["ball-square"] = 9,
+    ["key"] = 10
+}
 function Powerup:init(x, y, kind)
 
     self.x = x

@@ -118,7 +118,11 @@ function Brick:hit()
         if self.color == 1 then
             self.inPlay = false
             if powerup_spawn_timer == 0 then
-                powerup = Powerup(self.x + 10, self.y, 7)
+                if not key_obtained then
+                    powerup = Powerup(self.x + 10, self.y, 10)
+                else
+                    powerup = Powerup(self.x + 10, self.y, 7)
+                end
                 powerup_spawn_timer = 5
             end
         else
