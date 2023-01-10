@@ -28,7 +28,7 @@ function ServeState:enter(params)
 
     -- init new ball (random color for fun)
     self.balls = {}
-    self.balls[1] = Ball(math.random(7))
+    self.balls[1] = Ball(self.paddle.x + (self.paddle.width / 2) - 4, self.paddle.y - 8, 0, 0, math.random(7))
 end
 
 function ServeState:update(dt)

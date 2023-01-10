@@ -18,10 +18,12 @@ function Powerup:update(dt)
 
 end
 
-function Powerup:collide(target)
-    if self.x < target.x + target.width and self.x + self.width > target.x and self.y < target.y + target.height and self.height + self.y > target.y then
+function Powerup:collides(target)
+    if self.inGame and self.x < target.x + target.width and self.x + self.width > target.x and self.y < target.y + target.height and self.height + self.y > target.y then
         self.inGame = false
+        return true
     end
+    return false
 end
 
 function Powerup:render()

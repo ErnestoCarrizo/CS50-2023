@@ -65,7 +65,14 @@ function PlayState:update(dt)
 
     if powerup then
         powerup:update(dt)
-        res = powerup:collide(self.paddle)
+        norma = 1
+        if powerup:collides(self.paddle) and #self.balls <= 2 then
+            self.balls[#self.balls + 1] = Ball(self.balls[1].x + 8,
+                self.balls[1].y + 8, 
+                self.balls[1].dy - 20,
+                self.balls[1].dx - 20,
+                math.random(7))
+        end
     end
 
     for i = 1, #self.balls do
@@ -103,21 +110,14 @@ function PlayState:update(dt)
                 brick:hit()
 
                 -- if we have enough points, recover a point of health
-                if self.score > self.recoverPoints then
-                    -- can't go above 3 health
-                    self.health = math.min(3, self.health + 1)
-
-                    -- multiply recover points by 2
-                    self.recoverPoints = self.recoverPoints + math.min(100000, self.recoverPoints * 2)
-
-                    -- play recover sound effect
-                    gSounds['recover']:play()
-                end
+                self:bonusLife()
 
                 -- go to our victory screen if there are no more bricks left
                 if self:checkVictory() then
                     gSounds['victory']:play()
                     powerup = nil
+                    self.balls = {}
+                    self.balls[1] = Ball(0, 0, 0, 0, math.random(7))
                     gStateMachine:change('victory', {
                         level = self.level,
                         paddle = self.paddle,
@@ -180,30 +180,26 @@ function PlayState:update(dt)
         end
     end
 
-    --Powerup and Paddle
-    for i = 1, #self.balls do
-    -- if ball goes below bounds, revert to serve state and decrease health
-        if self.balls[i].y >= VIRTUAL_HEIGHT then
-            self.health = self.health - 1
-            powerup = nil
-            gSounds['hurt']:play()
+    if not self:atleastOne() then
+        self.health = self.health - 1
+        powerup = nil
+        gSounds['hurt']:play()
 
-            if self.health == 0 then
-                gStateMachine:change('game-over', {
-                    score = self.score,
-                    highScores = self.highScores
-                })
-            else
-                gStateMachine:change('serve', {
-                    paddle = self.paddle,
-                    bricks = self.bricks,
-                    health = self.health,
-                    score = self.score,
-                    highScores = self.highScores,
-                    level = self.level,
-                    recoverPoints = self.recoverPoints
-                })
-            end
+        if self.health == 0 then
+            gStateMachine:change('game-over', {
+                score = self.score,
+                highScores = self.highScores
+            })
+        else
+            gStateMachine:change('serve', {
+                paddle = self.paddle,
+                bricks = self.bricks,
+                health = self.health,
+                score = self.score,
+                highScores = self.highScores,
+                level = self.level,
+                recoverPoints = self.recoverPoints
+            })
         end
     end
 
@@ -240,8 +236,8 @@ function PlayState:render()
 
     renderScore(self.score)
     renderHealth(self.health)
-
     -- pause text, if paused
+    love.graphics.printf(#self.balls, 0, VIRTUAL_HEIGHT / 2 - 16, VIRTUAL_WIDTH, 'center')
     if self.paused then
         love.graphics.setFont(gFonts['large'])
         love.graphics.printf("PAUSED", 0, VIRTUAL_HEIGHT / 2 - 16, VIRTUAL_WIDTH, 'center')
@@ -256,4 +252,29 @@ function PlayState:checkVictory()
     end
 
     return true
+end
+
+function PlayState:atleastOne()
+    res = false
+    for i = #self.balls, 1, -1 do
+        if self.balls[i].y < VIRTUAL_HEIGHT then
+            res = true
+        elseif self.balls[i].y > VIRTUAL_HEIGHT then
+            table.remove(self.balls, i)
+        end
+    end
+    return res
+end
+
+function PlayState:bonusLife()
+    if self.score > self.recoverPoints then
+        -- can't go above 3 health
+        self.health = math.min(3, self.health + 1)
+
+        -- multiply recover points by 2
+        self.recoverPoints = self.recoverPoints + math.min(100000, self.recoverPoints * 2)
+
+        -- play recover sound effect
+        gSounds['recover']:play()
+    end
 end
