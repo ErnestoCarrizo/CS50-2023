@@ -17,7 +17,9 @@
 PlayState = Class{__includes = BaseState}
 
 powerup_spawn_timer = 5
+
 key_obtained = false
+
 paddle_sizes = {
     [1] = 32,
     [2] = 64,
@@ -73,14 +75,14 @@ function PlayState:update(dt)
     if powerup then
         powerup:update(dt)
         if powerup:collides(self.paddle) then
-            if powerup.kind == 10 then
-                key_obtained = true
-            else
+            if powerup.kind == 7 and #self.balls <= 2 then
                 self.balls[#self.balls + 1] = Ball(self.balls[1].x + 8,
                 self.balls[1].y + 8, 
                 self.balls[1].dx,
                 self.balls[1].dy,
                 math.random(7))
+            elseif powerup.kind == 10 then
+                key_obtained = true
             end
         end
     end
@@ -115,10 +117,11 @@ function PlayState:update(dt)
         -- only check collision if we're in play
             if brick.inPlay and self.balls[i]:collides(brick) then
                 -- add to score
-                    self.score = self.score + (brick.tier * 200 + brick.color * 25)
-
+                    if not brick.needKey then
+                        self.score = self.score + (brick.tier * 200 + brick.color * 25)
+                    end
                     -- trigger the brick's hit function, which removes it from play
-                    brick:hit()
+                    brick:hit(self.level)
 
                     -- if we have enough points, recover a point of health
                     self:bonusLife()
@@ -169,7 +172,7 @@ function PlayState:update(dt)
                     end
 
                     -- only allow colliding with one brick, for corners
-                    ::continue::
+                    break
             end
         end
     end
@@ -177,6 +180,7 @@ function PlayState:update(dt)
     if self:checkVictory() then
         gSounds['victory']:play()
         powerup = nil
+        key_obtained = false
         self.balls = {}
         self.balls[1] = Ball(self.paddle.x + (self.paddle.width / 2) - 4, self.paddle.y - 8, 0, 0, math.random(7))
         gStateMachine:change('victory', {

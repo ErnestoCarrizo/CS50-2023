@@ -59,7 +59,7 @@ function Brick:init(x, y)
     self.y = y
     self.width = 32
     self.height = 16
-
+    self.needKey = false
     -- used to determine whether this brick should be rendered
     self.inPlay = true
 
@@ -84,7 +84,7 @@ end
     Triggers a hit on the brick, taking it out of play if at 0 health or
     changing its color otherwise.
 ]]
-function Brick:hit()
+function Brick:hit(lvl)
     -- set the particle system to interpolate between two colors; in this case, we give
     -- it our self.color but with varying alpha; brighter for higher tiers, fading to 0
     -- over the particle's lifetime (the second color)
@@ -103,30 +103,34 @@ function Brick:hit()
     -- sound on hit
     gSounds['brick-hit-2']:stop()
     gSounds['brick-hit-2']:play()
-
+    if self.needKey and key_obtained then
+        self.needKey = false
+    end
     -- if we're at a higher tier than the base, we need to go down a tier
     -- if we're already at the lowest color, else just go down a color
-    if self.tier > 0 then
-        if self.color == 1 then
-            self.tier = self.tier - 1
-            self.color = 5
-        else
-            self.color = self.color - 1
-        end
-    else
-        -- if we're in the first tier and the base color, remove brick from play
-        if self.color == 1 then
-            self.inPlay = false
-            if powerup_spawn_timer == 0 then
-                if not key_obtained then
-                    powerup = Powerup(self.x + 10, self.y, 10)
-                else
-                    powerup = Powerup(self.x + 10, self.y, 7)
-                end
-                powerup_spawn_timer = 5
+    if not self.needKey then
+        if self.tier > 0 then
+            if self.color == 1 then
+                self.tier = self.tier - 1
+                self.color = 5
+            else
+                self.color = self.color - 1
             end
         else
-            self.color = self.color - 1
+            -- if we're in the first tier and the base color, remove brick from play
+            if self.color == 1 then
+                self.inPlay = false
+                if powerup_spawn_timer == 0 then
+                    if not key_obtained and (lvl % 2 == 0) then
+                        powerup = Powerup(self.x + 10, self.y, 10)
+                    else
+                        powerup = Powerup(self.x + 10, self.y, 7)
+                    end
+                    powerup_spawn_timer = 5
+                end
+            else
+                self.color = self.color - 1
+            end
         end
     end
 
@@ -142,11 +146,15 @@ function Brick:update(dt)
 end
 
 function Brick:render()
-    if self.inPlay then
+    if self.inPlay and not self.needKey then
         love.graphics.draw(gTextures['main'],
             -- multiply color by 4 (-1) to get our color offset, then add tier to that
             -- to draw the correct tier and color brick onto the screen
             gFrames['bricks'][1 + ((self.color - 1) * 4) + self.tier],
+            self.x, self.y)
+    elseif self.inPlay and self.needKey then
+        love.graphics.draw(gTextures['main'],
+            gFrames['keybrick'][1],
             self.x, self.y)
     end
 end

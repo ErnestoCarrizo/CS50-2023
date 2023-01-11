@@ -47,11 +47,13 @@ function LevelMaker.createMap(level)
     -- highest color of the highest tier, no higher than 5
     local highestColor = math.min(5, level % 5 + 3)
 
+    local haveKeyBrick = level % 2 == 0 and true or false
+    local rowKey = math.random(1, numRows)
+
     -- lay out bricks such that they touch each other and fill the space
     for y = 1, numRows do
         -- whether we want to enable skipping for this row
         local skipPattern = math.random(1, 2) == 1 and true or false
-
         -- whether we want to enable alternating colors for this row
         local alternatePattern = math.random(1, 2) == 1 and true or false
         
@@ -112,6 +114,9 @@ function LevelMaker.createMap(level)
                 b.tier = solidTier
             end 
 
+            if haveKeyBrick and rowKey == y and numRows > 1 then
+                b.needKey = true
+            end
             table.insert(bricks, b)
 
             -- Lua's version of the 'continue' statement

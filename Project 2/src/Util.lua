@@ -141,3 +141,7 @@ function GenerateQuadsPowerups(atlas)
 
     return powerups
 end
+
+function GenerateQuadsKeyBrick(atlas)
+    return table.slice(GenerateQuads(atlas, 32, 16), 24, 24)
+end
